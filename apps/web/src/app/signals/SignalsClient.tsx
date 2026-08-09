@@ -1,9 +1,10 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { Card } from "@/components/ui/Card";
 import { StatusBadge } from "@/components/ui/Misc";
+import { api } from "@/lib/api";
 import type { Signal, Market } from "@/lib/types";
 
 const FILTERS: { label: string; value: "all" | Market }[] = [
@@ -46,8 +47,18 @@ function formatTime(iso: string) {
     .replace(",", "");
 }
 
-export function SignalsClient({ signals }: { signals: Signal[] }) {
+export function SignalsClient() {
+  const [signals, setSignals] = useState<Signal[]>([]);
+  const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<"all" | Market>("all");
+
+  useEffect(() => {
+    api
+      .get<{ signals: Signal[] }>("/api/signals")
+      .then((data) => setSignals(data.signals))
+      .catch(() => setSignals([]))
+      .finally(() => setLoading(false));
+  }, []);
 
   const filtered = useMemo(
     () => (filter === "all" ? signals : signals.filter((s) => s.market === filter)),
@@ -80,7 +91,9 @@ export function SignalsClient({ signals }: { signals: Signal[] }) {
         </div>
       </div>
 
-      {filtered.length === 0 ? (
+      {loading ? (
+        <p className="mt-10 text-center text-fg/50">Loading signals…</p>
+      ) : filtered.length === 0 ? (
         <p className="mt-10 text-center text-fg/50">No signals for this market yet.</p>
       ) : (
         <div className="mt-7 grid grid-cols-1 gap-5 md:grid-cols-2">

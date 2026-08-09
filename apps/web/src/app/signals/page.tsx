@@ -1,36 +1,18 @@
-import { cookies } from "next/headers";
-import { API_URL } from "@/lib/api";
-import type { Signal } from "@/lib/types";
 import { SignalsClient } from "./SignalsClient";
 import { WhyAndCta } from "@/components/WhyAndCta";
 
-async function getSignals(): Promise<Signal[]> {
-  try {
-    // This is a server-side fetch (Node -> Express), so the browser never
-    // attaches the auth cookie automatically. Forward it manually so the API
-    // knows who's asking and can unlock signals the viewer is entitled to.
-    const cookieHeader = cookies()
-      .getAll()
-      .map((c) => `${c.name}=${c.value}`)
-      .join("; ");
-
-    const res = await fetch(`${API_URL}/api/signals`, {
-      cache: "no-store",
-      headers: cookieHeader ? { Cookie: cookieHeader } : undefined,
-    });
-    if (!res.ok) return [];
-    const data = await res.json();
-    return data.signals as Signal[];
-  } catch {
-    return [];
-  }
-}
-
-export default async function SignalsPage() {
-  const signals = await getSignals();
+// Signals are fetched client-side inside SignalsClient rather than here on
+// the server. Reason: the frontend (Vercel) and API (Render) are on
+// different domains in production, so the browser's auth cookie is scoped to
+// the API's domain and is never sent to the Next.js server when it renders
+// this page — a server-side fetch would always look "logged out" to the API,
+// even for a real admin/subscriber. A client-side fetch (via `api.get`, with
+// credentials: "include") talks to the API's domain directly, so the browser
+// attaches the cookie correctly and entitlements resolve for the real viewer.
+export default function SignalsPage() {
   return (
     <>
-      <SignalsClient signals={signals} />
+      <SignalsClient />
       <WhyAndCta />
     </>
   );
