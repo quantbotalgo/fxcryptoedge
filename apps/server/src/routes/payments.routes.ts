@@ -1,11 +1,12 @@
-import { Router } from "express";
+import { Router, type Request, type Response } from "express";
 import { z } from "zod";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { db } from "../db/client.js";
-import { plans, subscriptions } from "../db/schema.js";
+import { plans, subscriptions, referrals } from "../db/schema.js";
 import { requireAuth } from "../middleware/auth.js";
 import { razorpay, isRazorpayConfigured, verifyPaymentSignature, verifyWebhookSignature } from "../lib/razorpay.js";
 import { priceFor, type BillingCycle } from "../lib/pricing.js";
+import { tierForPaidConversions, commissionPctForTier } from "../lib/referral.js";
 
 export const paymentsRouter = Router();
 
@@ -23,7 +24,7 @@ const createOrderSchema = z.object({
 // Requires RAZORPAY_KEY_ID / RAZORPAY_KEY_SECRET in apps/server/.env — until the
 // client provides real (test or live) keys from their Razorpay dashboard, this
 // returns 501 so the rest of the app keeps working.
-paymentsRouter.post("/create-order", requireAuth, async (req, res) => {
+paymentsRouter.post("/create-order", requireAuth, async (req: Request, res: Response) => {
   if (!razorpay) {
     return res.status(501).json({
       error: "Payments are not configured yet. Add RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET to apps/server/.env.",
@@ -80,7 +81,7 @@ const MONTHS_BY_CYCLE: Record<BillingCycle, number> = {
   ANNUAL: 12,
 };
 
-paymentsRouter.post("/verify", requireAuth, async (req, res) => {
+paymentsRouter.post("/verify", requireAuth, async (req: Request, res: Response) => {
   const parsed = verifySchema.safeParse(req.body);
   if (!parsed.success) return res.status(400).json({ error: parsed.error.issues[0].message });
   const { subscriptionId, razorpay_order_id, razorpay_payment_id, razorpay_signature } = parsed.data;
@@ -122,12 +123,38 @@ paymentsRouter.post("/verify", requireAuth, async (req, res) => {
     .where(eq(subscriptions.id, subscriptionId))
     .returning();
 
+  await creditReferralOnFirstConversion(subscription.userId, updated.amount);
+
   res.json({ subscription: updated });
 });
 
+// If this user signed up via a referral code and this is their first ever
+// paid subscription, mark that referral CONVERTED and credit the referrer's
+// commission at their current tier rate. Only fires once per referred user
+// (guarded by the SIGNED_UP -> CONVERTED status check), so later renewals or
+// plan changes don't double-pay the referrer.
+async function creditReferralOnFirstConversion(referredUserId: string, paymentAmount: number) {
+  const referral = await db.query.referrals.findFirst({
+    where: and(eq(referrals.referredUserId, referredUserId), eq(referrals.status, "SIGNED_UP")),
+  });
+  if (!referral) return;
+
+  const priorConversions = await db.query.referrals.findMany({
+    where: and(eq(referrals.referrerId, referral.referrerId), eq(referrals.status, "CONVERTED")),
+  });
+  const tier = tierForPaidConversions(priorConversions.length);
+  const commissionPct = commissionPctForTier(tier.key);
+  const commissionEarned = Math.round(paymentAmount * commissionPct);
+
+  await db
+    .update(referrals)
+    .set({ status: "CONVERTED", commissionEarned, updatedAt: new Date() })
+    .where(eq(referrals.id, referral.id));
+}
+
 // Razorpay server-to-server webhook (payment.captured, subscription.charged, etc).
 // Configure this URL in the Razorpay dashboard once the client has a merchant account.
-paymentsRouter.post("/webhook", async (req, res) => {
+paymentsRouter.post("/webhook", async (req: Request, res: Response) => {
   const signature = req.headers["x-razorpay-signature"] as string | undefined;
   const rawBody = (req as unknown as { rawBody?: string }).rawBody ?? JSON.stringify(req.body);
   if (!signature || !verifyWebhookSignature(rawBody, signature)) {

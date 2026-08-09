@@ -1,4 +1,4 @@
-import { Router } from "express";
+import { Router, type Request, type Response } from "express";
 import { desc } from "drizzle-orm";
 import { db } from "../db/client.js";
 import { signals } from "../db/schema.js";
@@ -23,7 +23,7 @@ function marketBreakdown(closed: Row[], market: "FOREX" | "CRYPTO" | "XAUUSD") {
   };
 }
 
-performanceRouter.get("/", async (_req, res) => {
+performanceRouter.get("/", async (_req: Request, res: Response) => {
   const all = await db.query.signals.findMany({ orderBy: desc(signals.postedAt) });
   const closed = all.filter((r) => r.status !== "ACTIVE" && r.returnPct !== null);
 

@@ -1,4 +1,4 @@
-import { Router } from "express";
+import { Router, type Request, type Response } from "express";
 import { asc } from "drizzle-orm";
 import { db } from "../db/client.js";
 import { plans } from "../db/schema.js";
@@ -8,7 +8,7 @@ export const plansRouter = Router();
 
 const VALID_CYCLES: BillingCycle[] = ["MONTHLY", "QUARTERLY", "ANNUAL"];
 
-plansRouter.get("/", async (req, res) => {
+plansRouter.get("/", async (req: Request, res: Response) => {
   const cycleParam = (req.query.billingCycle as string)?.toUpperCase();
   const billingCycle: BillingCycle = VALID_CYCLES.includes(cycleParam as BillingCycle)
     ? (cycleParam as BillingCycle)

@@ -1,4 +1,4 @@
-import { Router } from "express";
+import { Router, type Request, type Response } from "express";
 import { z } from "zod";
 import { eq } from "drizzle-orm";
 import { db } from "../db/client.js";
@@ -12,7 +12,7 @@ referralsRouter.get("/tiers", (_req, res) => {
   res.json({ tiers: COMMISSION_TIERS });
 });
 
-referralsRouter.get("/me", requireAuth, async (req, res) => {
+referralsRouter.get("/me", requireAuth, async (req: Request, res: Response) => {
   const user = await db.query.users.findFirst({ where: eq(users.id, req.user!.sub) });
   if (!user) return res.status(404).json({ error: "User not found" });
 
@@ -35,7 +35,7 @@ referralsRouter.get("/me", requireAuth, async (req, res) => {
 
 const claimSchema = z.object({ code: z.string().min(3).max(20) });
 
-referralsRouter.post("/claim-code", requireAuth, async (req, res) => {
+referralsRouter.post("/claim-code", requireAuth, async (req: Request, res: Response) => {
   const parsed = claimSchema.safeParse(req.body);
   if (!parsed.success) return res.status(400).json({ error: parsed.error.issues[0].message });
   const code = parsed.data.code.toUpperCase().replace(/[^A-Z0-9]/g, "");
@@ -55,7 +55,7 @@ referralsRouter.post("/claim-code", requireAuth, async (req, res) => {
   res.json({ referralCode: updated.referralCode });
 });
 
-referralsRouter.post("/random-code", requireAuth, async (req, res) => {
+referralsRouter.post("/random-code", requireAuth, async (req: Request, res: Response) => {
   const { generateReferralCode } = await import("../lib/referral.js");
   const user = await db.query.users.findFirst({ where: eq(users.id, req.user!.sub) });
   for (let i = 0; i < 8; i++) {

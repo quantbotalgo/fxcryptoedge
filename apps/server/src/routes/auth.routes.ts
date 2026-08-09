@@ -1,4 +1,4 @@
-import { Router } from "express";
+import { Router, type Request, type Response } from "express";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { OAuth2Client } from "google-auth-library";
@@ -46,7 +46,7 @@ const registerSchema = z.object({
   referredByCode: z.string().optional(),
 });
 
-authRouter.post("/register", async (req, res) => {
+authRouter.post("/register", async (req: Request, res: Response) => {
   const parsed = registerSchema.safeParse(req.body);
   if (!parsed.success) return res.status(400).json({ error: parsed.error.issues[0].message });
   const { name, email, password, referredByCode } = parsed.data;
@@ -86,7 +86,7 @@ const loginSchema = z.object({
   password: z.string().min(1),
 });
 
-authRouter.post("/login", async (req, res) => {
+authRouter.post("/login", async (req: Request, res: Response) => {
   const parsed = loginSchema.safeParse(req.body);
   if (!parsed.success) return res.status(400).json({ error: parsed.error.issues[0].message });
   const { email, password } = parsed.data;
@@ -106,7 +106,7 @@ authRouter.post("/login", async (req, res) => {
 // Frontend uses Google Identity Services to get an ID token, then posts it here.
 const googleSchema = z.object({ idToken: z.string() });
 
-authRouter.post("/google", async (req, res) => {
+authRouter.post("/google", async (req: Request, res: Response) => {
   if (!process.env.GOOGLE_CLIENT_ID) {
     return res.status(501).json({ error: "Google login is not configured on this server yet" });
   }
@@ -154,7 +154,7 @@ authRouter.post("/logout", (_req, res) => {
   res.json({ ok: true });
 });
 
-authRouter.get("/me", requireAuth, async (req, res) => {
+authRouter.get("/me", requireAuth, async (req: Request, res: Response) => {
   const user = await db.query.users.findFirst({ where: eq(users.id, req.user!.sub) });
   if (!user) return res.status(404).json({ error: "User not found" });
   res.json({ user: publicUser(user) });

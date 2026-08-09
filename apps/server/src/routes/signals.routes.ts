@@ -1,4 +1,4 @@
-import { Router } from "express";
+import { Router, type Request, type Response } from "express";
 import { z } from "zod";
 import { desc, eq } from "drizzle-orm";
 import { db } from "../db/client.js";
@@ -42,7 +42,7 @@ function applyPaywall(rows: SignalRow[], unlocked: Set<Market>, isAdmin: boolean
   });
 }
 
-signalsRouter.get("/", optionalAuth, async (req, res) => {
+signalsRouter.get("/", optionalAuth, async (req: Request, res: Response) => {
   const filter = marketFilter.safeParse((req.query.market as string)?.toLowerCase() ?? "all");
   const market = filter.success ? filter.data : "all";
 
@@ -60,7 +60,7 @@ signalsRouter.get("/", optionalAuth, async (req, res) => {
   res.json({ signals: applyPaywall(rows, unlocked, isAdmin) });
 });
 
-signalsRouter.get("/:id", optionalAuth, async (req, res) => {
+signalsRouter.get("/:id", optionalAuth, async (req: Request, res: Response) => {
   const row = await db.query.signals.findFirst({ where: eq(signals.id, req.params.id) });
   if (!row) return res.status(404).json({ error: "Signal not found" });
 
@@ -87,7 +87,7 @@ const createSchema = z.object({
   status: z.enum(["ACTIVE", "CLOSED", "TP_HIT", "SL_HIT"]).optional(),
 });
 
-signalsRouter.post("/", requireAdmin, async (req, res) => {
+signalsRouter.post("/", requireAdmin, async (req: Request, res: Response) => {
   const parsed = createSchema.safeParse(req.body);
   if (!parsed.success) return res.status(400).json({ error: parsed.error.issues[0].message });
 
@@ -102,7 +102,7 @@ const updateSchema = createSchema.partial().extend({
   returnPct: z.number().optional(),
 });
 
-signalsRouter.patch("/:id", requireAdmin, async (req, res) => {
+signalsRouter.patch("/:id", requireAdmin, async (req: Request, res: Response) => {
   const parsed = updateSchema.safeParse(req.body);
   if (!parsed.success) return res.status(400).json({ error: parsed.error.issues[0].message });
 
@@ -120,7 +120,7 @@ signalsRouter.patch("/:id", requireAdmin, async (req, res) => {
   res.json({ signal: row });
 });
 
-signalsRouter.delete("/:id", requireAdmin, async (req, res) => {
+signalsRouter.delete("/:id", requireAdmin, async (req: Request, res: Response) => {
   const [row] = await db.delete(signals).where(eq(signals.id, req.params.id)).returning();
   if (!row) return res.status(404).json({ error: "Signal not found" });
   res.json({ ok: true });
