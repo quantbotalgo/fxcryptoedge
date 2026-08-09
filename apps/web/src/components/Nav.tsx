@@ -18,6 +18,7 @@ export function Nav() {
   const router = useRouter();
   const { user, logout } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   const navItems = useMemo(() => {
     if (!user) return [...MARKETING_ITEMS];
@@ -28,13 +29,34 @@ export function Nav() {
     // Pricing and Refer & Earn drop out of their nav too.
     const hiddenForUser = user.role === "ADMIN" ? ["/", "/pricing", "/refer"] : ["/"];
     const items = MARKETING_ITEMS.filter((item) => !hiddenForUser.includes(item.href));
-    items.push({ label: "Dashboard", href: "/dashboard" });
-    if (user.role === "ADMIN") items.push({ label: "Admin", href: "/admin" });
+
+    if (user.role === "ADMIN") {
+      // Dashboard leads for admins — it's their actual home base, not an
+      // afterthought after the marketing-facing tabs.
+      items.unshift({ label: "Dashboard", href: "/dashboard" });
+      items.push({ label: "Admin", href: "/admin" });
+    } else {
+      items.push({ label: "Dashboard", href: "/dashboard" });
+    }
     return items;
   }, [user]);
 
+  const anyMenuOpen = menuOpen || mobileOpen;
+
   return (
-    <nav className="sticky top-0 z-50 flex items-center justify-between gap-4 border-b border-white/[.07] bg-bg/72 px-5 py-4 backdrop-blur-2xl sm:px-8">
+    <nav className="sticky top-0 z-50 border-b border-white/[.07] bg-bg/72 backdrop-blur-2xl">
+    {/* Click/tap anywhere outside an open dropdown to close it — sits below
+        the nav bar's own z-index so it doesn't block the dropdown itself. */}
+    {anyMenuOpen && (
+      <div
+        className="fixed inset-0 z-40"
+        onClick={() => {
+          setMenuOpen(false);
+          setMobileOpen(false);
+        }}
+      />
+    )}
+    <div className="relative flex items-center justify-between gap-4 px-5 py-4 sm:px-8">
       <Link href={user ? "/dashboard" : "/"} className="flex items-center gap-2.5">
         <div className="flex h-[34px] w-[34px] items-center justify-center rounded-[11px] bg-gradient-to-br from-accent to-accent-2 shadow-[0_6px_18px_rgba(99,102,241,.4)]">
           <span className="font-display text-lg font-bold text-white">⚡</span>
@@ -76,7 +98,7 @@ export function Nav() {
               )}
             </button>
             {menuOpen && (
-              <div className="absolute right-0 top-10 w-52 rounded-[14px] border border-white/[.1] bg-[#0d0b16] p-1.5 shadow-xl">
+              <div className="absolute right-0 top-10 z-50 w-52 rounded-[14px] border border-white/[.1] bg-[#0d0b16] p-1.5 shadow-xl">
                 <div className="px-3 py-2 text-xs text-fg/45 truncate">{user.email}</div>
                 <button
                   onClick={async () => {
@@ -104,7 +126,45 @@ export function Nav() {
             </Link>
           </>
         )}
+
+        <button
+          onClick={() => setMobileOpen((v) => !v)}
+          aria-label={mobileOpen ? "Close menu" : "Open menu"}
+          className="flex h-9 w-9 flex-none items-center justify-center rounded-[10px] border border-white/[.1] text-fg/80 md:hidden"
+        >
+          {mobileOpen ? "✕" : "☰"}
+        </button>
       </div>
+
+      {mobileOpen && (
+        <div className="absolute inset-x-0 top-full z-50 flex flex-col gap-1 border-b border-white/[.07] bg-[#0d0b16] px-5 py-3 shadow-xl md:hidden">
+          {navItems.map((item) => {
+            const active = item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={() => setMobileOpen(false)}
+                className={`rounded-[10px] px-3 py-2.5 text-[15px] font-medium ${
+                  active ? "bg-white/[.06] text-fg" : "text-fg/65"
+                }`}
+              >
+                {item.label}
+              </Link>
+            );
+          })}
+          {!user && (
+            <Link
+              href="/login"
+              onClick={() => setMobileOpen(false)}
+              className="rounded-[10px] px-3 py-2.5 text-[15px] font-medium text-fg/65 sm:hidden"
+            >
+              Login
+            </Link>
+          )}
+        </div>
+      )}
+    </div>
     </nav>
   );
 }

@@ -52,11 +52,26 @@ export function ReferClient({ tiers }: { tiers: CommissionTier[] }) {
   const [codeInput, setCodeInput] = useState("");
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
+  const [origin, setOrigin] = useState("");
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     if (!user) return;
     api.get<ReferralMe>("/api/referrals/me").then(setMe).catch(() => setMe(null));
   }, [user]);
+
+  useEffect(() => {
+    setOrigin(window.location.origin);
+  }, []);
+
+  const shareLink = me?.referralCode ? `${origin}/signup?ref=${me.referralCode}` : "";
+
+  async function copyLink() {
+    if (!shareLink) return;
+    await navigator.clipboard.writeText(shareLink);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }
 
   async function claimCode() {
     if (!codeInput.trim()) return;
@@ -132,9 +147,25 @@ export function ReferClient({ tiers }: { tiers: CommissionTier[] }) {
             <div className="mb-1 font-display text-lg font-semibold">Your referral link</div>
             <p className="mb-3 text-sm text-fg/60">Pick a custom code or generate one automatically.</p>
             {me?.referralCode && (
-              <p className="mb-3 text-sm text-fg/75">
-                Current code: <span className="font-mono font-semibold text-accent-soft">{me.referralCode}</span>
-              </p>
+              <>
+                <p className="mb-3 text-sm text-fg/75">
+                  Current code: <span className="font-mono font-semibold text-accent-soft">{me.referralCode}</span>
+                </p>
+                <div className="mb-4 flex flex-col gap-2.5 sm:flex-row">
+                  <input
+                    readOnly
+                    value={shareLink}
+                    onClick={(e) => e.currentTarget.select()}
+                    className="flex-1 rounded-[12px] border border-white/[.1] bg-white/[.03] px-4 py-3 font-mono text-sm text-fg/70 outline-none"
+                  />
+                  <button
+                    onClick={copyLink}
+                    className="rounded-[12px] border border-white/[.16] bg-white/[.03] px-5 py-3 text-sm font-semibold whitespace-nowrap"
+                  >
+                    {copied ? "Copied!" : "Copy link"}
+                  </button>
+                </div>
+              </>
             )}
             <div className="flex flex-col gap-2.5 sm:flex-row">
               <input

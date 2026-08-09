@@ -1,6 +1,6 @@
 import { Router, type Request, type Response } from "express";
 import { z } from "zod";
-import { and, eq } from "drizzle-orm";
+import { and, desc, eq, gt, isNull, or } from "drizzle-orm";
 import { db } from "../db/client.js";
 import { plans, subscriptions, referrals } from "../db/schema.js";
 import { requireAuth } from "../middleware/auth.js";
@@ -12,6 +12,36 @@ export const paymentsRouter = Router();
 
 paymentsRouter.get("/status", (_req, res) => {
   res.json({ configured: isRazorpayConfigured() });
+});
+
+// The caller's currently active (not expired) subscriptions, most recent
+// first, with plan details joined in — powers the "Your plan" card on the
+// dashboard so it reflects what the user actually bought instead of always
+// showing "no subscription."
+paymentsRouter.get("/me", requireAuth, async (req: Request, res: Response) => {
+  const now = new Date();
+  const rows = await db
+    .select({
+      id: subscriptions.id,
+      billingCycle: subscriptions.billingCycle,
+      status: subscriptions.status,
+      amount: subscriptions.amount,
+      startedAt: subscriptions.startedAt,
+      expiresAt: subscriptions.expiresAt,
+      plan: { name: plans.name, market: plans.market, tier: plans.tier },
+    })
+    .from(subscriptions)
+    .innerJoin(plans, eq(subscriptions.planId, plans.id))
+    .where(
+      and(
+        eq(subscriptions.userId, req.user!.sub),
+        eq(subscriptions.status, "ACTIVE"),
+        or(isNull(subscriptions.expiresAt), gt(subscriptions.expiresAt, now))
+      )
+    )
+    .orderBy(desc(subscriptions.startedAt));
+
+  res.json({ subscriptions: rows });
 });
 
 const createOrderSchema = z.object({

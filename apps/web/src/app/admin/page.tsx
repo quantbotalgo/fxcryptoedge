@@ -118,6 +118,12 @@ function AdminSignals() {
                     Reopen
                   </button>
                 )}
+                <Link
+                  href={`/admin/${s.id}/edit`}
+                  className="rounded-lg border border-white/10 px-2.5 py-1.5 text-xs text-fg/70"
+                >
+                  Edit
+                </Link>
                 <button
                   onClick={() => remove(s)}
                   className="rounded-lg border border-danger/30 px-2.5 py-1.5 text-xs text-danger"

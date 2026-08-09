@@ -94,6 +94,16 @@ export type User = {
   referralCode: string | null;
 };
 
+export type MySubscription = {
+  id: string;
+  billingCycle: BillingCycle;
+  status: "PENDING" | "ACTIVE" | "CANCELED" | "EXPIRED";
+  amount: number;
+  startedAt: string | null;
+  expiresAt: string | null;
+  plan: { name: string; market: string; tier: PlanTier };
+};
+
 export type ReferralMe = {
   referralCode: string | null;
   signups: number;

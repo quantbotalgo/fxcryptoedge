@@ -6,7 +6,46 @@ import Link from "next/link";
 import { useAuth } from "@/lib/auth-context";
 import { FlatCard } from "@/components/ui/Card";
 import { api } from "@/lib/api";
-import type { Signal } from "@/lib/types";
+import type { Signal, MySubscription } from "@/lib/types";
+
+function formatExpiry(iso: string | null) {
+  if (!iso) return null;
+  return new Date(iso).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
+}
+
+function YourPlanCard() {
+  const [subs, setSubs] = useState<MySubscription[] | null>(null);
+
+  useEffect(() => {
+    api
+      .get<{ subscriptions: MySubscription[] }>("/api/payments/me")
+      .then((data) => setSubs(data.subscriptions))
+      .catch(() => setSubs([]));
+  }, []);
+
+  const active = subs?.[0];
+
+  return (
+    <FlatCard className="p-5">
+      <div className="mb-1 font-display text-lg font-semibold">Your plan</div>
+      {subs === null ? (
+        <p className="mb-3 text-sm text-fg/60">Loading…</p>
+      ) : active ? (
+        <p className="mb-3 text-sm text-fg/60">
+          <span className="font-semibold text-fg/85">
+            {active.plan.name} · {active.plan.market}
+          </span>
+          {active.expiresAt && <> — renews {formatExpiry(active.expiresAt)}</>}
+        </p>
+      ) : (
+        <p className="mb-3 text-sm text-fg/60">You don&apos;t have an active subscription yet.</p>
+      )}
+      <Link href="/pricing" className="text-sm font-semibold text-accent-soft">
+        {active ? "Manage plan →" : "View plans →"}
+      </Link>
+    </FlatCard>
+  );
+}
 
 function AdminDashboard({ name }: { name: string }) {
   const [signals, setSignals] = useState<Signal[] | null>(null);
@@ -65,13 +104,7 @@ export default function DashboardPage() {
         <AdminDashboard name="Fx Crypto Edge" />
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <FlatCard className="p-5">
-            <div className="mb-1 font-display text-lg font-semibold">Your plan</div>
-            <p className="mb-3 text-sm text-fg/60">You don&apos;t have an active subscription yet.</p>
-            <Link href="/pricing" className="text-sm font-semibold text-accent-soft">
-              View plans →
-            </Link>
-          </FlatCard>
+          <YourPlanCard />
           <FlatCard className="p-5">
             <div className="mb-1 font-display text-lg font-semibold">Referral program</div>
             <p className="mb-3 text-sm text-fg/60">
