@@ -77,7 +77,7 @@ export function PricingClient({ plans }: { plans: Plan[] }) {
   const proPricing = pro ? priceFor(pro.basePriceMonthly, billingCycle) : null;
 
   return (
-    <section className="mx-auto max-w-[1180px] px-8 pb-5 pt-14">
+    <section className="mx-auto max-w-[1180px] px-5 sm:px-8 pb-5 pt-14">
       <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="afterInteractive" />
       <div className="text-center">
         <div className="font-mono text-xs uppercase tracking-[.22em] text-accent">Pricing</div>

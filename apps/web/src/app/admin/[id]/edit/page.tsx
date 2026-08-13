@@ -38,7 +38,7 @@ function EditSignalPageInner() {
 
   if (notFound) {
     return (
-      <section className="mx-auto max-w-[560px] px-8 py-20 text-center text-fg/50">
+      <section className="mx-auto max-w-[560px] px-5 sm:px-8 py-20 text-center text-fg/50">
         Signal not found.
       </section>
     );
@@ -46,7 +46,7 @@ function EditSignalPageInner() {
 
   if (!signal) {
     return (
-      <section className="mx-auto max-w-[560px] px-8 py-20 text-center text-fg/50">Loading…</section>
+      <section className="mx-auto max-w-[560px] px-5 sm:px-8 py-20 text-center text-fg/50">Loading…</section>
     );
   }
 

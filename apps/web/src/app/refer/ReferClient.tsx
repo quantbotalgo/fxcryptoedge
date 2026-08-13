@@ -104,7 +104,7 @@ export function ReferClient({ tiers }: { tiers: CommissionTier[] }) {
   }
 
   return (
-    <section className="mx-auto max-w-[1180px] px-8 pb-5 pt-14">
+    <section className="mx-auto max-w-[1180px] px-5 sm:px-8 pb-5 pt-14">
       <div
         className="rounded-[24px] border border-white/[.08] px-6 py-11 text-center"
         style={{ background: "linear-gradient(150deg, rgba(139,124,246,.14), rgba(255,255,255,.02))" }}

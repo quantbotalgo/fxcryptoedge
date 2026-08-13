@@ -15,7 +15,7 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
   }, [loading, user, router]);
 
   if (loading || !user || user.role !== "ADMIN") {
-    return <section className="mx-auto max-w-[720px] px-8 py-20 text-center text-fg/50">Loading…</section>;
+    return <section className="mx-auto max-w-[720px] px-5 sm:px-8 py-20 text-center text-fg/50">Loading…</section>;
   }
 
   return <>{children}</>;

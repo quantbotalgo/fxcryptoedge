@@ -17,7 +17,7 @@ export function WhyAndCta() {
 
   return (
     <>
-      <section className="mx-auto max-w-[1180px] px-8 py-16 text-center">
+      <section className="mx-auto max-w-[1180px] px-5 sm:px-8 py-16 text-center">
         <h2 className="font-display text-3xl font-bold tracking-tight sm:text-[36px]">
           Why traders love Fx Crypto Edge
         </h2>
@@ -36,7 +36,7 @@ export function WhyAndCta() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-[1180px] px-8 pb-16 pt-6">
+      <section className="mx-auto max-w-[1180px] px-5 sm:px-8 pb-16 pt-6">
         <div
           className="rounded-[26px] border border-accent/[.28] bg-white/[.03] px-6 py-13 text-center"
           style={{

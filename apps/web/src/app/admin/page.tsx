@@ -45,7 +45,7 @@ function AdminSignals() {
   }
 
   return (
-    <section className="mx-auto max-w-[1000px] px-8 py-14">
+    <section className="mx-auto max-w-[1000px] px-5 sm:px-8 py-14">
       <div className="mb-6 flex items-center justify-between">
         <div>
           <h1 className="font-display text-3xl font-bold tracking-tight">Manage signals</h1>

@@ -31,14 +31,14 @@ const MARKETS = [
 export default function HomePage() {
   return (
     <div>
-      <section className="mx-auto max-w-[900px] px-8 pb-5 pt-[78px] text-center">
+      <section className="mx-auto max-w-[900px] px-5 pb-5 pt-[78px] text-center sm:px-8">
         <Pill className="mx-auto">
           <span className="h-[7px] w-[7px] animate-pulse-dot rounded-full bg-success" />
           Live signals · Markets open
         </Pill>
-        <h1 className="mt-6 font-display text-[42px] font-bold leading-[1.05] tracking-tight sm:text-[56px] lg:text-[64px]">
-          Trading signals for
-          <br />
+        <h1 className="mt-6 font-display text-[32px] font-bold leading-[1.2] tracking-tight sm:text-[56px] sm:leading-[1.05] lg:text-[64px]">
+          Trading signals for{" "}
+          <br className="hidden sm:block" />
           <span className="text-gradient">Forex, Crypto &amp; Gold.</span>
         </h1>
         <div className="mt-3.5 font-display text-xl font-semibold tracking-tight text-accent">
@@ -81,7 +81,7 @@ export default function HomePage() {
         </div>
       </div>
 
-      <section className="mx-auto max-w-[1180px] px-8 pb-2 pt-9">
+      <section className="mx-auto max-w-[1180px] px-5 sm:px-8 pb-2 pt-9">
         <div className="flex flex-wrap items-center justify-center gap-5 rounded-[18px] border border-white/[.08] bg-white/[.03] px-6 py-[18px]">
           <div className="flex items-center">
             {AVATARS.map((a, i) => (
@@ -105,7 +105,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-[1180px] px-8 pb-5 pt-14 text-center">
+      <section className="mx-auto max-w-[1180px] px-5 sm:px-8 pb-5 pt-14 text-center">
         <SectionLabel>Markets we cover</SectionLabel>
         <h2 className="mt-3 mb-8 font-display text-[32px] font-bold tracking-tight sm:text-[40px]">
           Three markets. One desk.

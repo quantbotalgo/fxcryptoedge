@@ -66,7 +66,7 @@ export function SignalsClient() {
   );
 
   return (
-    <section className="mx-auto max-w-[1180px] px-8 pb-5 pt-14">
+    <section className="mx-auto max-w-[1180px] px-5 sm:px-8 pb-5 pt-14">
       <div className="flex flex-wrap items-end justify-between gap-x-[18px] gap-y-4">
         <div>
           <h1 className="font-display text-[36px] font-bold tracking-tight sm:text-[44px]">

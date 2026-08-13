@@ -92,11 +92,11 @@ export default function DashboardPage() {
   }, [loading, user, router]);
 
   if (loading || !user) {
-    return <section className="mx-auto max-w-[720px] px-8 py-20 text-center text-fg/50">Loading…</section>;
+    return <section className="mx-auto max-w-[720px] px-5 sm:px-8 py-20 text-center text-fg/50">Loading…</section>;
   }
 
   return (
-    <section className="mx-auto max-w-[720px] px-8 py-16">
+    <section className="mx-auto max-w-[720px] px-5 sm:px-8 py-16">
       <h1 className="mb-1 font-display text-3xl font-bold tracking-tight">Welcome, {user.name.split(" ")[0]}</h1>
       <p className="mb-8 text-sm text-fg/60">{user.email}</p>
 

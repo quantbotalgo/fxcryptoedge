@@ -39,7 +39,7 @@ function LoginForm() {
   }
 
   return (
-    <section className="mx-auto max-w-[420px] px-8 py-16">
+    <section className="mx-auto max-w-[420px] px-5 sm:px-8 py-16">
       <h1 className="mb-1 text-center font-display text-3xl font-bold tracking-tight">Welcome back</h1>
       <p className="mb-8 text-center text-sm text-fg/60">Log in to view your signals and account.</p>
 

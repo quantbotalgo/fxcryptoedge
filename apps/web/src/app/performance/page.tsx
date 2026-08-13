@@ -28,7 +28,7 @@ export default async function PerformancePage() {
 
   if (!data) {
     return (
-      <section className="mx-auto max-w-[1180px] px-8 py-20 text-center text-fg/60">
+      <section className="mx-auto max-w-[1180px] px-5 sm:px-8 py-20 text-center text-fg/60">
         Performance data is unavailable right now. Make sure the API server is running.
       </section>
     );
@@ -65,7 +65,7 @@ export default async function PerformancePage() {
 
   return (
     <>
-    <section className="mx-auto max-w-[1180px] px-8 pb-5 pt-14">
+    <section className="mx-auto max-w-[1180px] px-5 sm:px-8 pb-5 pt-14">
       <SectionLabel>Performance</SectionLabel>
       <h1 className="mt-2.5 mb-1.5 font-display text-[36px] font-bold tracking-tight sm:text-[44px]">
         Verified, transparent results.

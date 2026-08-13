@@ -89,7 +89,7 @@ export function SignalForm({
   }
 
   return (
-    <section className="mx-auto max-w-[560px] px-8 py-14">
+    <section className="mx-auto max-w-[560px] px-5 sm:px-8 py-14">
       <h1 className="mb-6 font-display text-3xl font-bold tracking-tight">{title}</h1>
       <FlatCard className="p-6">
         <form onSubmit={handleSubmit} className="flex flex-col gap-3.5">
