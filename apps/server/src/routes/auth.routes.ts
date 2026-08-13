@@ -1,13 +1,15 @@
 import { Router, type Request, type Response } from "express";
 import bcrypt from "bcryptjs";
+import crypto from "crypto";
 import { z } from "zod";
 import { OAuth2Client } from "google-auth-library";
-import { eq } from "drizzle-orm";
+import { eq, and, gt } from "drizzle-orm";
 import { db } from "../db/client.js";
 import { users, referrals } from "../db/schema.js";
 import { signToken } from "../lib/jwt.js";
 import { requireAuth } from "../middleware/auth.js";
 import { generateReferralCode } from "../lib/referral.js";
+import { sendPasswordResetEmail } from "../lib/email.js";
 
 export const authRouter = Router();
 
@@ -158,4 +160,72 @@ authRouter.get("/me", requireAuth, async (req: Request, res: Response) => {
   const user = await db.query.users.findFirst({ where: eq(users.id, req.user!.sub) });
   if (!user) return res.status(404).json({ error: "User not found" });
   res.json({ user: publicUser(user) });
+});
+
+function hashToken(raw: string) {
+  return crypto.createHash("sha256").update(raw).digest("hex");
+}
+
+const RESET_TOKEN_TTL_MS = 60 * 60 * 1000; // 1 hour
+
+const forgotPasswordSchema = z.object({ email: z.string().email() });
+
+authRouter.post("/forgot-password", async (req: Request, res: Response) => {
+  const parsed = forgotPasswordSchema.safeParse(req.body);
+  if (!parsed.success) return res.status(400).json({ error: parsed.error.issues[0].message });
+
+  // Always respond the same way regardless of whether the email exists or has
+  // a password at all (Google-only accounts have no passwordHash) — otherwise
+  // this endpoint becomes a way to enumerate registered emails.
+  const genericOk = { ok: true, message: "If that email has an account, a reset link has been sent." };
+
+  const user = await db.query.users.findFirst({ where: eq(users.email, parsed.data.email) });
+  if (!user || !user.passwordHash) {
+    return res.json(genericOk);
+  }
+
+  const rawToken = crypto.randomBytes(32).toString("hex");
+  await db
+    .update(users)
+    .set({
+      passwordResetTokenHash: hashToken(rawToken),
+      passwordResetExpires: new Date(Date.now() + RESET_TOKEN_TTL_MS),
+    })
+    .where(eq(users.id, user.id));
+
+  const resetUrl = `${process.env.CLIENT_ORIGIN}/reset-password?token=${rawToken}`;
+  try {
+    await sendPasswordResetEmail(user.email, resetUrl);
+  } catch (err) {
+    console.error("[auth] failed to send password reset email:", err);
+  }
+
+  res.json(genericOk);
+});
+
+const resetPasswordSchema = z.object({
+  token: z.string().min(1),
+  password: z.string().min(8),
+});
+
+authRouter.post("/reset-password", async (req: Request, res: Response) => {
+  const parsed = resetPasswordSchema.safeParse(req.body);
+  if (!parsed.success) return res.status(400).json({ error: parsed.error.issues[0].message });
+  const { token, password } = parsed.data;
+
+  const tokenHash = hashToken(token);
+  const user = await db.query.users.findFirst({
+    where: and(eq(users.passwordResetTokenHash, tokenHash), gt(users.passwordResetExpires, new Date())),
+  });
+  if (!user) {
+    return res.status(400).json({ error: "This reset link is invalid or has expired" });
+  }
+
+  const passwordHash = await bcrypt.hash(password, 10);
+  await db
+    .update(users)
+    .set({ passwordHash, passwordResetTokenHash: null, passwordResetExpires: null })
+    .where(eq(users.id, user.id));
+
+  res.json({ ok: true });
 });

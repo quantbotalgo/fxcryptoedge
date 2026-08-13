@@ -50,6 +50,8 @@ export const users = pgTable(
     name: text("name").notNull(),
     role: roleEnum("role").notNull().default("USER"),
     referralCode: text("referral_code"),
+    passwordResetTokenHash: text("password_reset_token_hash"),
+    passwordResetExpires: timestamp("password_reset_expires"),
     createdAt: timestamp("created_at").notNull().defaultNow(),
     updatedAt: timestamp("updated_at").notNull().defaultNow(),
   },
