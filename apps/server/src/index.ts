@@ -13,9 +13,23 @@ import { paymentsRouter } from "./routes/payments.routes.js";
 const app = express();
 const PORT = Number(process.env.PORT) || 4000;
 
+// CLIENT_ORIGIN may be a single URL or a comma-separated list (e.g. both the
+// apex and "www" versions of a custom domain, since a browser sees those as
+// two different origins even though they resolve to the "same site" to a
+// human — Vercel's apex->www redirect means the page can actually be served
+// from either one depending on how the visitor typed the URL).
+const allowedOrigins = (process.env.CLIENT_ORIGIN || "http://localhost:3000")
+  .split(",")
+  .map((o) => o.trim())
+  .filter(Boolean);
+
 app.use(
   cors({
-    origin: process.env.CLIENT_ORIGIN || "http://localhost:3000",
+    origin(origin, callback) {
+      // Same-origin requests (curl, server-to-server, no Origin header) are fine.
+      if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
+      callback(new Error(`Origin ${origin} not allowed by CORS`));
+    },
     credentials: true,
   })
 );
