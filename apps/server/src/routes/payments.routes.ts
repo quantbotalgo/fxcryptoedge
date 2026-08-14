@@ -23,11 +23,13 @@ paymentsRouter.get("/me", requireAuth, async (req: Request, res: Response) => {
   const rows = await db
     .select({
       id: subscriptions.id,
+      planId: subscriptions.planId,
       billingCycle: subscriptions.billingCycle,
       status: subscriptions.status,
       amount: subscriptions.amount,
       startedAt: subscriptions.startedAt,
       expiresAt: subscriptions.expiresAt,
+      canceledAt: subscriptions.canceledAt,
       plan: { name: plans.name, market: plans.market, tier: plans.tier },
     })
     .from(subscriptions)
@@ -42,6 +44,37 @@ paymentsRouter.get("/me", requireAuth, async (req: Request, res: Response) => {
     .orderBy(desc(subscriptions.startedAt));
 
   res.json({ subscriptions: rows });
+});
+
+const cancelSchema = z.object({ subscriptionId: z.string() });
+
+// "Cancel" just stops it from being considered for renewal — status stays
+// ACTIVE and entitlements are untouched, so the user keeps what they already
+// paid for until expiresAt. There's no auto-renewal/recurring billing wired
+// up yet (see the webhook TODO below), so in practice this mainly exists to
+// let the user record "don't charge me again" and see that reflected in the UI.
+paymentsRouter.post("/cancel", requireAuth, async (req: Request, res: Response) => {
+  const parsed = cancelSchema.safeParse(req.body);
+  if (!parsed.success) return res.status(400).json({ error: parsed.error.issues[0].message });
+
+  const subscription = await db.query.subscriptions.findFirst({
+    where: eq(subscriptions.id, parsed.data.subscriptionId),
+  });
+  if (!subscription) return res.status(404).json({ error: "Subscription not found" });
+  if (subscription.userId !== req.user!.sub) {
+    return res.status(403).json({ error: "This subscription doesn't belong to you" });
+  }
+  if (subscription.status !== "ACTIVE") {
+    return res.status(400).json({ error: "Only active subscriptions can be canceled" });
+  }
+
+  const [updated] = await db
+    .update(subscriptions)
+    .set({ canceledAt: new Date(), updatedAt: new Date() })
+    .where(eq(subscriptions.id, subscription.id))
+    .returning();
+
+  res.json({ subscription: updated });
 });
 
 const createOrderSchema = z.object({

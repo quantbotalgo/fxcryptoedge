@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export function Footer() {
   return (
     <footer className="mx-auto flex max-w-[1180px] flex-wrap items-center justify-between gap-4 border-t border-white/[.07] px-5 sm:px-8 py-7">
@@ -10,8 +12,8 @@ export function Footer() {
         </span>
       </div>
       <div className="flex gap-7 text-sm text-fg/60">
-        <a href="#">Privacy</a>
-        <a href="#">Terms</a>
+        <Link href="/privacy">Privacy</Link>
+        <Link href="/terms">Terms</Link>
         <a href="mailto:partners@fxcryptoedge.in">Contact</a>
       </div>
     </footer>

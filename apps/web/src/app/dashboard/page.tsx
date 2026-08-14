@@ -15,33 +15,79 @@ function formatExpiry(iso: string | null) {
 
 function YourPlanCard() {
   const [subs, setSubs] = useState<MySubscription[] | null>(null);
+  const [canceling, setCanceling] = useState<string | null>(null);
+  const [confirmId, setConfirmId] = useState<string | null>(null);
 
-  useEffect(() => {
+  function load() {
     api
       .get<{ subscriptions: MySubscription[] }>("/api/payments/me")
       .then((data) => setSubs(data.subscriptions))
       .catch(() => setSubs([]));
-  }, []);
+  }
 
-  const active = subs?.[0];
+  useEffect(load, []);
+
+  async function cancel(id: string) {
+    setCanceling(id);
+    try {
+      await api.post("/api/payments/cancel", { subscriptionId: id });
+      load();
+    } catch {
+      // leave the list as-is; the button reverting to normal is signal enough
+    } finally {
+      setCanceling(null);
+      setConfirmId(null);
+    }
+  }
 
   return (
     <FlatCard className="p-5">
-      <div className="mb-1 font-display text-lg font-semibold">Your plan</div>
+      <div className="mb-1 font-display text-lg font-semibold">Your plan{subs && subs.length > 1 ? "s" : ""}</div>
       {subs === null ? (
         <p className="mb-3 text-sm text-fg/60">Loading…</p>
-      ) : active ? (
-        <p className="mb-3 text-sm text-fg/60">
-          <span className="font-semibold text-fg/85">
-            {active.plan.name} · {active.plan.market}
-          </span>
-          {active.expiresAt && <> — renews {formatExpiry(active.expiresAt)}</>}
-        </p>
-      ) : (
+      ) : subs.length === 0 ? (
         <p className="mb-3 text-sm text-fg/60">You don&apos;t have an active subscription yet.</p>
+      ) : (
+        <div className="mb-3 flex flex-col gap-3">
+          {subs.map((s) => (
+            <div key={s.id} className="border-b border-white/[.06] pb-3 last:border-0 last:pb-0">
+              <p className="text-sm text-fg/60">
+                <span className="font-semibold text-fg/85">
+                  {s.plan.name} · {s.plan.market}
+                </span>
+                {s.expiresAt && (
+                  <> — {s.canceledAt ? "cancels" : "renews"} {formatExpiry(s.expiresAt)}</>
+                )}
+              </p>
+              {!s.canceledAt &&
+                (confirmId === s.id ? (
+                  <div className="mt-1.5 flex items-center gap-3 text-xs">
+                    <span className="text-fg/55">Cancel this plan?</span>
+                    <button
+                      onClick={() => cancel(s.id)}
+                      disabled={canceling === s.id}
+                      className="font-semibold text-danger disabled:opacity-60"
+                    >
+                      {canceling === s.id ? "Canceling…" : "Yes, cancel"}
+                    </button>
+                    <button onClick={() => setConfirmId(null)} className="font-semibold text-fg/55">
+                      Never mind
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => setConfirmId(s.id)}
+                    className="mt-1 text-xs font-semibold text-fg/45 hover:text-danger"
+                  >
+                    Cancel subscription
+                  </button>
+                ))}
+            </div>
+          ))}
+        </div>
       )}
       <Link href="/pricing" className="text-sm font-semibold text-accent-soft">
-        {active ? "Manage plan →" : "View plans →"}
+        {subs && subs.length > 0 ? "View plans →" : "Get a plan →"}
       </Link>
     </FlatCard>
   );

@@ -96,11 +96,13 @@ export type User = {
 
 export type MySubscription = {
   id: string;
+  planId: string;
   billingCycle: BillingCycle;
   status: "PENDING" | "ACTIVE" | "CANCELED" | "EXPIRED";
   amount: number;
   startedAt: string | null;
   expiresAt: string | null;
+  canceledAt: string | null;
   plan: { name: string; market: string; tier: PlanTier };
 };
 

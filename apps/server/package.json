@@ -10,7 +10,8 @@
     "db:generate": "drizzle-kit generate",
     "db:push": "drizzle-kit push",
     "db:seed": "tsx src/db/seed.ts",
-    "db:add-reset-columns": "tsx src/db/add-reset-columns.ts"
+    "db:add-reset-columns": "tsx src/db/add-reset-columns.ts",
+    "db:add-cancel-column": "tsx src/db/add-cancel-column.ts"
   },
   "dependencies": {
     "@paralleldrive/cuid2": "^2.2.2",

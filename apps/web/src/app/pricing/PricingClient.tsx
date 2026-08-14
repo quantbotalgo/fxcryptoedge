@@ -1,11 +1,14 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Script from "next/script";
+import Link from "next/link";
 import { Card } from "@/components/ui/Card";
 import { priceFor, money } from "@/lib/pricing";
 import { useSubscribeCheckout } from "@/lib/useSubscribeCheckout";
-import type { BillingCycle, Plan } from "@/lib/types";
+import { useAuth } from "@/lib/auth-context";
+import { api } from "@/lib/api";
+import type { BillingCycle, MySubscription, Plan } from "@/lib/types";
 
 const BILL_TABS: { label: string; value: BillingCycle; save: string | null }[] = [
   { label: "Monthly", value: "MONTHLY", save: null },
@@ -13,7 +16,41 @@ const BILL_TABS: { label: string; value: BillingCycle; save: string | null }[] =
   { label: "Annual", value: "ANNUAL", save: "SAVE 40%" },
 ];
 
-function PriceCard({ plan, billingCycle }: { plan: Plan; billingCycle: BillingCycle }) {
+function formatDate(iso: string | null) {
+  if (!iso) return null;
+  return new Date(iso).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
+}
+
+function CurrentPlanNote({ sub }: { sub: MySubscription }) {
+  return (
+    <div className="mt-5">
+      <div className="rounded-[13px] border border-accent/30 bg-accent/[.08] py-3 text-center text-[15px] font-semibold text-accent-soft">
+        ✓ Current plan
+      </div>
+      <p className="mt-2 text-center text-xs text-fg/50">
+        {sub.canceledAt
+          ? `Cancels on ${formatDate(sub.expiresAt)}`
+          : sub.expiresAt
+            ? `Renews ${formatDate(sub.expiresAt)}`
+            : null}{" "}
+        ·{" "}
+        <Link href="/dashboard" className="font-semibold text-accent-soft">
+          Manage in dashboard
+        </Link>
+      </p>
+    </div>
+  );
+}
+
+function PriceCard({
+  plan,
+  billingCycle,
+  activeSub,
+}: {
+  plan: Plan;
+  billingCycle: BillingCycle;
+  activeSub?: MySubscription;
+}) {
   const pricing = priceFor(plan.basePriceMonthly, billingCycle);
   const { subscribe, busy, error } = useSubscribeCheckout(plan, billingCycle);
 
@@ -32,13 +69,17 @@ function PriceCard({ plan, billingCycle }: { plan: Plan; billingCycle: BillingCy
         </div>
       )}
       <div className="mt-1.5 text-[12.5px] text-fg/45">{pricing.billedLabel}</div>
-      <button
-        onClick={subscribe}
-        disabled={busy}
-        className="mt-5 rounded-[13px] bg-gradient-to-br from-accent to-accent-2 py-3 text-center text-[15px] font-semibold text-white shadow-[0_12px_30px_rgba(99,102,241,.32)] disabled:opacity-60"
-      >
-        {busy ? "Please wait…" : `Get ${plan.name}`}
-      </button>
+      {activeSub ? (
+        <CurrentPlanNote sub={activeSub} />
+      ) : (
+        <button
+          onClick={subscribe}
+          disabled={busy}
+          className="mt-5 rounded-[13px] bg-gradient-to-br from-accent to-accent-2 py-3 text-center text-[15px] font-semibold text-white shadow-[0_12px_30px_rgba(99,102,241,.32)] disabled:opacity-60"
+        >
+          {busy ? "Please wait…" : `Get ${plan.name}`}
+        </button>
+      )}
       {error && <p className="mt-2 text-xs text-danger">{error}</p>}
       <div className="mt-4 flex flex-col gap-2">
         {plan.features.map((f) => (
@@ -52,8 +93,17 @@ function PriceCard({ plan, billingCycle }: { plan: Plan; billingCycle: BillingCy
   );
 }
 
-function ProSubscribeButton({ plan, billingCycle }: { plan: Plan; billingCycle: BillingCycle }) {
+function ProSubscribeButton({
+  plan,
+  billingCycle,
+  activeSub,
+}: {
+  plan: Plan;
+  billingCycle: BillingCycle;
+  activeSub?: MySubscription;
+}) {
   const { subscribe, busy, error } = useSubscribeCheckout(plan, billingCycle);
+  if (activeSub) return <CurrentPlanNote sub={activeSub} />;
   return (
     <>
       <button
@@ -69,7 +119,26 @@ function ProSubscribeButton({ plan, billingCycle }: { plan: Plan; billingCycle: 
 }
 
 export function PricingClient({ plans }: { plans: Plan[] }) {
+  const { user } = useAuth();
   const [billingCycle, setBillingCycle] = useState<BillingCycle>("MONTHLY");
+  const [mySubs, setMySubs] = useState<MySubscription[]>([]);
+
+  useEffect(() => {
+    if (!user) {
+      setMySubs([]);
+      return;
+    }
+    api
+      .get<{ subscriptions: MySubscription[] }>("/api/payments/me")
+      .then((data) => setMySubs(data.subscriptions))
+      .catch(() => setMySubs([]));
+  }, [user]);
+
+  const subByPlanId = useMemo(() => {
+    const map = new Map<string, MySubscription>();
+    for (const s of mySubs) map.set(s.planId, s);
+    return map;
+  }, [mySubs]);
 
   const basic = useMemo(() => plans.filter((p) => p.tier === "BASIC"), [plans]);
   const lite = useMemo(() => plans.filter((p) => p.tier === "LITE"), [plans]);
@@ -116,7 +185,7 @@ export function PricingClient({ plans }: { plans: Plan[] }) {
       </div>
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-3">
         {basic.map((p) => (
-          <PriceCard key={p.id} plan={p} billingCycle={billingCycle} />
+          <PriceCard key={p.id} plan={p} billingCycle={billingCycle} activeSub={subByPlanId.get(p.id)} />
         ))}
       </div>
 
@@ -126,7 +195,7 @@ export function PricingClient({ plans }: { plans: Plan[] }) {
       </div>
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
         {lite.map((p) => (
-          <PriceCard key={p.id} plan={p} billingCycle={billingCycle} />
+          <PriceCard key={p.id} plan={p} billingCycle={billingCycle} activeSub={subByPlanId.get(p.id)} />
         ))}
       </div>
 
@@ -159,7 +228,7 @@ export function PricingClient({ plans }: { plans: Plan[] }) {
                   </div>
                 )}
                 <div className="mt-1.5 text-[12.5px] text-fg/45">{proPricing.billedLabel}</div>
-                <ProSubscribeButton plan={pro} billingCycle={billingCycle} />
+                <ProSubscribeButton plan={pro} billingCycle={billingCycle} activeSub={subByPlanId.get(pro.id)} />
               </div>
               <div className="flex flex-col gap-3">
                 {pro.features.map((f) => (

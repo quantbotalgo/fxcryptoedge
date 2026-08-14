@@ -128,6 +128,10 @@ export const subscriptions = pgTable(
     amount: integer("amount").notNull(),
     startedAt: timestamp("started_at"),
     expiresAt: timestamp("expires_at"),
+    // Set when the user cancels — subscription stays ACTIVE (and entitled)
+    // until expiresAt, it just won't renew. Kept separate from `status` so
+    // cancellation doesn't immediately cut off access they already paid for.
+    canceledAt: timestamp("canceled_at"),
     createdAt: timestamp("created_at").notNull().defaultNow(),
     updatedAt: timestamp("updated_at").notNull().defaultNow(),
   },
