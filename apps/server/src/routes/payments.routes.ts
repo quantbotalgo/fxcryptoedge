@@ -170,6 +170,29 @@ paymentsRouter.post("/verify", requireAuth, async (req: Request, res: Response) 
   });
   if (!valid) return res.status(400).json({ error: "Payment signature verification failed" });
 
+  // Shared with the webhook below — whichever of the two notices the payment
+  // first does the actual activation, the other is a no-op. This is the fast
+  // path: it runs the instant the Checkout popup's callback fires, so the
+  // user gets redirected to the dashboard immediately instead of waiting on
+  // Razorpay's webhook delivery.
+  const updated = await activateSubscriptionForOrder(razorpay_order_id, razorpay_payment_id);
+  if (!updated) return res.status(404).json({ error: "Subscription not found" });
+
+  res.json({ subscription: updated });
+});
+
+// Marks the PENDING subscription tied to a Razorpay order as ACTIVE and
+// credits any referral commission. Idempotent: if the subscription is
+// already ACTIVE (because the client-side /verify call or a prior webhook
+// delivery already handled it), this just returns it as-is without
+// re-crediting the referral or overwriting startedAt/expiresAt.
+async function activateSubscriptionForOrder(orderId: string, paymentId?: string) {
+  const subscription = await db.query.subscriptions.findFirst({
+    where: eq(subscriptions.razorpayOrderId, orderId),
+  });
+  if (!subscription) return null;
+  if (subscription.status !== "PENDING") return subscription;
+
   const now = new Date();
   const expires = new Date(now);
   expires.setMonth(expires.getMonth() + MONTHS_BY_CYCLE[subscription.billingCycle as BillingCycle]);
@@ -178,18 +201,17 @@ paymentsRouter.post("/verify", requireAuth, async (req: Request, res: Response) 
     .update(subscriptions)
     .set({
       status: "ACTIVE",
-      razorpayPaymentId: razorpay_payment_id,
+      razorpayPaymentId: paymentId ?? subscription.razorpayPaymentId,
       startedAt: now,
       expiresAt: expires,
       updatedAt: now,
     })
-    .where(eq(subscriptions.id, subscriptionId))
+    .where(eq(subscriptions.id, subscription.id))
     .returning();
 
-  await creditReferralOnFirstConversion(subscription.userId, updated.amount);
-
-  res.json({ subscription: updated });
-});
+  await creditReferralOnFirstConversion(updated.userId, updated.amount);
+  return updated;
+}
 
 // If this user signed up via a referral code and this is their first ever
 // paid subscription, mark that referral CONVERTED and credit the referrer's
@@ -215,15 +237,41 @@ async function creditReferralOnFirstConversion(referredUserId: string, paymentAm
     .where(eq(referrals.id, referral.id));
 }
 
-// Razorpay server-to-server webhook (payment.captured, subscription.charged, etc).
-// Configure this URL in the Razorpay dashboard once the client has a merchant account.
+// Razorpay server-to-server webhook. This is what makes payment activation
+// reliable: the client-side /verify call above only fires if the customer's
+// browser stays open through the Checkout popup's callback — if they close
+// the tab, lose network, or the app crashes mid-callback, Razorpay still has
+// their money but our database would never have found out. Razorpay retries
+// this webhook independently of the browser, so it's the source of truth;
+// /verify is just a fast path for immediate UI feedback. Configure this URL
+// (https://<api-domain>/api/payments/webhook) and a webhook secret in the
+// Razorpay dashboard under Settings → Webhooks, and set RAZORPAY_WEBHOOK_SECRET
+// in Render to match.
 paymentsRouter.post("/webhook", async (req: Request, res: Response) => {
   const signature = req.headers["x-razorpay-signature"] as string | undefined;
-  const rawBody = (req as unknown as { rawBody?: string }).rawBody ?? JSON.stringify(req.body);
-  if (!signature || !verifyWebhookSignature(rawBody, signature)) {
+  const rawBody = req.rawBody;
+  if (!rawBody || !signature || !verifyWebhookSignature(rawBody, signature)) {
     return res.status(400).json({ error: "Invalid webhook signature" });
   }
-  // TODO: handle event types (payment.captured, subscription.cancelled, ...) once
-  // real Razorpay subscription plans are set up.
+
+  const event = req.body?.event as string | undefined;
+  const paymentEntity = req.body?.payload?.payment?.entity as
+    | { id?: string; order_id?: string }
+    | undefined;
+
+  // payment.captured is the reliable "money has actually landed" event.
+  // order.paid fires alongside it for the same order — handled by the same
+  // idempotent function, so it's harmless if both arrive.
+  if ((event === "payment.captured" || event === "order.paid") && paymentEntity?.order_id) {
+    try {
+      await activateSubscriptionForOrder(paymentEntity.order_id, paymentEntity.id);
+    } catch (err) {
+      console.error("[payments] failed to activate subscription from webhook:", err);
+      // Still ack with 200 below — returning an error here would make Razorpay
+      // retry indefinitely for what might be a permanent bug, not a transient
+      // one. The failure is logged for manual follow-up instead.
+    }
+  }
+
   res.json({ ok: true });
 });

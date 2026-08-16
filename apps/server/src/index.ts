@@ -33,7 +33,19 @@ app.use(
     credentials: true,
   })
 );
-app.use(express.json());
+app.use(
+  express.json({
+    // Capture the exact raw bytes alongside the parsed body — needed for the
+    // Razorpay webhook's HMAC signature check, which must be computed over
+    // the original bytes, not a re-serialized JSON.stringify(req.body) (key
+    // order/whitespace differences would make every signature check fail).
+    verify: (req, _res, buf) => {
+      // body-parser types `req` as plain http.IncomingMessage here, not the
+      // Express Request our declaration-merged `rawBody` field lives on.
+      (req as express.Request).rawBody = buf.toString("utf8");
+    },
+  })
+);
 app.use(cookieParser());
 
 app.get("/api/health", (_req, res) => res.json({ ok: true }));
