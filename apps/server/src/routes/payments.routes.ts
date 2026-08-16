@@ -251,8 +251,12 @@ paymentsRouter.post("/webhook", async (req: Request, res: Response) => {
   const signature = req.headers["x-razorpay-signature"] as string | undefined;
   const rawBody = req.rawBody;
   if (!rawBody || !signature || !verifyWebhookSignature(rawBody, signature)) {
+    console.warn(
+      `[payments] webhook signature check failed (hasRawBody=${!!rawBody}, hasSignature=${!!signature}) — check RAZORPAY_WEBHOOK_SECRET matches the Razorpay dashboard`
+    );
     return res.status(400).json({ error: "Invalid webhook signature" });
   }
+  console.log(`[payments] webhook received: event=${req.body?.event}`);
 
   const event = req.body?.event as string | undefined;
   const paymentEntity = req.body?.payload?.payment?.entity as
