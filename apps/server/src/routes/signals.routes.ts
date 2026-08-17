@@ -5,42 +5,11 @@ import { db } from "../db/client.js";
 import { signals } from "../db/schema.js";
 import { requireAdmin, optionalAuth } from "../middleware/auth.js";
 import { entitledMarkets, type Market } from "../lib/entitlements.js";
+import { applyPaywall } from "../lib/paywall.js";
 
 export const signalsRouter = Router();
 
 const marketFilter = z.enum(["all", "forex", "crypto", "xauusd"]).default("all");
-
-type SignalRow = typeof signals.$inferSelect;
-
-const REDACTED_FIELDS = ["entry", "stopLoss", "tp1", "tp2", "tp3", "note"] as const;
-
-/**
- * Applies the market paywall: full detail if the viewer is entitled to that
- * signal's market (or is an admin), otherwise the sensitive fields are
- * stripped and `locked: true` is set. Exactly one signal per market — the
- * most recently posted — always stays fully visible as a free sample.
- */
-function applyPaywall(rows: SignalRow[], unlocked: Set<Market>, isAdmin: boolean) {
-  const freeSamplePerMarket = new Map<Market, string>();
-  for (const row of rows) {
-    // rows are ordered by postedAt desc, so the first one seen per market is the newest
-    if (!freeSamplePerMarket.has(row.market as Market)) {
-      freeSamplePerMarket.set(row.market as Market, row.id);
-    }
-  }
-
-  return rows.map((row) => {
-    const isFreeSample = freeSamplePerMarket.get(row.market as Market) === row.id;
-    const hasAccess = isAdmin || unlocked.has(row.market as Market) || isFreeSample;
-    if (hasAccess) return { ...row, locked: false };
-
-    const redacted = { ...row, locked: true } as SignalRow & { locked: boolean };
-    for (const field of REDACTED_FIELDS) {
-      (redacted as Record<string, unknown>)[field] = null;
-    }
-    return redacted;
-  });
-}
 
 signalsRouter.get("/", optionalAuth, async (req: Request, res: Response) => {
   const filter = marketFilter.safeParse((req.query.market as string)?.toLowerCase() ?? "all");

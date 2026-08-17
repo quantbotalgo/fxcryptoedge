@@ -2,6 +2,9 @@ import { Router, type Request, type Response } from "express";
 import { desc } from "drizzle-orm";
 import { db } from "../db/client.js";
 import { signals } from "../db/schema.js";
+import { optionalAuth } from "../middleware/auth.js";
+import { entitledMarkets, type Market } from "../lib/entitlements.js";
+import { applyPaywall } from "../lib/paywall.js";
 
 export const performanceRouter = Router();
 
@@ -23,9 +26,19 @@ function marketBreakdown(closed: Row[], market: "FOREX" | "CRYPTO" | "XAUUSD") {
   };
 }
 
-performanceRouter.get("/", async (_req: Request, res: Response) => {
+performanceRouter.get("/", optionalAuth, async (req: Request, res: Response) => {
   const all = await db.query.signals.findMany({ orderBy: desc(signals.postedAt) });
   const closed = all.filter((r) => r.status !== "ACTIVE" && r.returnPct !== null);
+
+  // Aggregate stats (win rate, cumulative return, etc.) are computed from the
+  // full unredacted data — those numbers aren't sensitive on their own and
+  // are the actual "proof" this page exists to show. Only the per-trade list
+  // below (exact entry/SL/TP levels) is gated, same rule as Live Signals —
+  // otherwise anyone could get every signal's full detail for free by just
+  // calling this endpoint instead of subscribing.
+  const isAdmin = req.user?.role === "ADMIN";
+  const unlocked = isAdmin ? new Set<Market>() : await entitledMarkets(req.user?.sub ?? null);
+  const trades = applyPaywall(all, unlocked, isAdmin);
 
   const wins = closed.filter((r) => (r.returnPct ?? 0) > 0).length;
   const losses = closed.filter((r) => (r.returnPct ?? 0) <= 0).length;
@@ -50,6 +63,6 @@ performanceRouter.get("/", async (_req: Request, res: Response) => {
       marketBreakdown(closed, "CRYPTO"),
       marketBreakdown(closed, "XAUUSD"),
     ],
-    trades: all,
+    trades,
   });
 });
