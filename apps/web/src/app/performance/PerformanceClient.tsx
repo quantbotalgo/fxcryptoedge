@@ -15,6 +15,14 @@ function formatEntry(entry: string | null) {
   return entry ?? "••••";
 }
 
+function statusStyleFor(status: PerformanceResponse["trades"][number]["status"]) {
+  if (status === "ACTIVE") return { bg: "rgba(139,124,246,.18)", color: "#a99bf9", label: "Active" };
+  if (status === "TP_HIT") return { bg: "rgba(52,211,153,.16)", color: "#34d399", label: "TP Hit" };
+  if (status === "SL_HIT")
+    return { bg: "rgba(255,255,255,.07)", color: "rgba(244,243,250,.55)", label: "SL Hit" };
+  return { bg: "rgba(255,255,255,.07)", color: "rgba(244,243,250,.55)", label: "Closed" };
+}
+
 export function PerformanceClient() {
   const [data, setData] = useState<PerformanceResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -98,62 +106,101 @@ export function PerformanceClient() {
       </div>
 
       <div className="mt-6 overflow-hidden rounded-[20px] border border-white/[.08] bg-white/[.025]">
-        <div className="flex items-center justify-between px-6 pb-4 pt-[22px]">
+        <div className="flex items-center justify-between px-5 pb-4 pt-[22px] sm:px-6">
           <span className="font-display text-xl font-semibold">Trade history</span>
           <span className="text-[13px] text-fg/45">{trades.length} results</span>
         </div>
-        <div className="grid grid-cols-[1.4fr_.8fr_1fr_1fr_.8fr] px-6 pb-2.5 font-mono text-[10.5px] tracking-[.1em] text-fg/40">
-          <span>PAIR</span>
-          <span>ACTION</span>
-          <span>STATUS</span>
-          <span className="text-right">ENTRY</span>
-          <span className="text-right">RETURN %</span>
-        </div>
-        {trades.map((t) => {
-          const retColor =
-            t.returnPct === null ? "rgba(244,243,250,.4)" : t.returnPct < 0 ? "#f87171" : "#34d399";
-          const statusStyle =
-            t.status === "ACTIVE"
-              ? { bg: "rgba(139,124,246,.18)", color: "#a99bf9", label: "Active" }
-              : t.status === "TP_HIT"
-                ? { bg: "rgba(52,211,153,.16)", color: "#34d399", label: "TP Hit" }
-                : t.status === "SL_HIT"
-                  ? { bg: "rgba(255,255,255,.07)", color: "rgba(244,243,250,.55)", label: "SL Hit" }
-                  : { bg: "rgba(255,255,255,.07)", color: "rgba(244,243,250,.55)", label: "Closed" };
-          return (
-            <div
-              key={t.id}
-              className="grid grid-cols-[1.4fr_.8fr_1fr_1fr_.8fr] items-center border-t border-white/[.05] px-6 py-3.5"
-            >
-              <div>
-                <div className="font-display text-[14.5px] font-semibold">{t.pair}</div>
-                <div className="font-mono text-[9.5px] tracking-[.08em] text-fg/38">{t.marketLabel}</div>
-              </div>
-              <span
-                className="text-[13px] font-semibold"
-                style={{ color: t.action === "BUY" ? "#34d399" : "#f87171" }}
+
+        {/* Desktop/tablet: dense grid table */}
+        <div className="hidden sm:block">
+          <div className="grid grid-cols-[1.4fr_.8fr_1fr_1fr_.8fr] px-6 pb-2.5 font-mono text-[10.5px] tracking-[.1em] text-fg/40">
+            <span>PAIR</span>
+            <span>ACTION</span>
+            <span>STATUS</span>
+            <span className="text-right">ENTRY</span>
+            <span className="text-right">RETURN %</span>
+          </div>
+          {trades.map((t) => {
+            const retColor =
+              t.returnPct === null ? "rgba(244,243,250,.4)" : t.returnPct < 0 ? "#f87171" : "#34d399";
+            const statusStyle = statusStyleFor(t.status);
+            return (
+              <div
+                key={t.id}
+                className="grid grid-cols-[1.4fr_.8fr_1fr_1fr_.8fr] items-center border-t border-white/[.05] px-6 py-3.5"
               >
-                {t.action === "BUY" ? "↗" : "↘"} {t.action}
-              </span>
-              <span>
+                <div>
+                  <div className="font-display text-[14.5px] font-semibold">{t.pair}</div>
+                  <div className="font-mono text-[9.5px] tracking-[.08em] text-fg/38">{t.marketLabel}</div>
+                </div>
                 <span
-                  className="rounded-full px-2.5 py-1 text-[11.5px] font-semibold"
-                  style={{ background: statusStyle.bg, color: statusStyle.color }}
+                  className="text-[13px] font-semibold"
+                  style={{ color: t.action === "BUY" ? "#34d399" : "#f87171" }}
                 >
-                  {statusStyle.label}
+                  {t.action === "BUY" ? "↗" : "↘"} {t.action}
                 </span>
-              </span>
-              <span
-                className={`text-right font-mono text-sm ${t.locked ? "select-none text-fg/35" : ""}`}
-              >
-                {formatEntry(t.entry)}
-              </span>
-              <span className="text-right font-mono text-sm font-semibold" style={{ color: retColor }}>
-                {t.returnPct === null ? "—" : fmtPct(t.returnPct)}
-              </span>
-            </div>
-          );
-        })}
+                <span>
+                  <span
+                    className="rounded-full px-2.5 py-1 text-[11.5px] font-semibold"
+                    style={{ background: statusStyle.bg, color: statusStyle.color }}
+                  >
+                    {statusStyle.label}
+                  </span>
+                </span>
+                <span
+                  className={`text-right font-mono text-sm ${t.locked ? "select-none text-fg/35" : ""}`}
+                >
+                  {formatEntry(t.entry)}
+                </span>
+                <span className="text-right font-mono text-sm font-semibold" style={{ color: retColor }}>
+                  {t.returnPct === null ? "—" : fmtPct(t.returnPct)}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Mobile: stacked cards — the 5-column grid above is too cramped
+            below the sm breakpoint to stay legible. */}
+        <div className="sm:hidden">
+          {trades.map((t) => {
+            const retColor =
+              t.returnPct === null ? "rgba(244,243,250,.4)" : t.returnPct < 0 ? "#f87171" : "#34d399";
+            const statusStyle = statusStyleFor(t.status);
+            return (
+              <div key={t.id} className="border-t border-white/[.05] px-5 py-3.5">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="font-display text-[14.5px] font-semibold">{t.pair}</div>
+                    <div className="font-mono text-[9.5px] tracking-[.08em] text-fg/38">{t.marketLabel}</div>
+                  </div>
+                  <span
+                    className="rounded-full px-2.5 py-1 text-[11.5px] font-semibold"
+                    style={{ background: statusStyle.bg, color: statusStyle.color }}
+                  >
+                    {statusStyle.label}
+                  </span>
+                </div>
+                <div className="mt-2.5 flex items-center justify-between">
+                  <span
+                    className="text-[13px] font-semibold"
+                    style={{ color: t.action === "BUY" ? "#34d399" : "#f87171" }}
+                  >
+                    {t.action === "BUY" ? "↗" : "↘"} {t.action}
+                    <span
+                      className={`ml-2 font-mono text-[12.5px] font-normal ${t.locked ? "select-none text-fg/35" : "text-fg/60"}`}
+                    >
+                      @ {formatEntry(t.entry)}
+                    </span>
+                  </span>
+                  <span className="font-mono text-sm font-semibold" style={{ color: retColor }}>
+                    {t.returnPct === null ? "—" : fmtPct(t.returnPct)}
+                  </span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
       </div>
     </section>
   );
