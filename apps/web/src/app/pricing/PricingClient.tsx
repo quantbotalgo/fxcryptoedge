@@ -156,12 +156,12 @@ export function PricingClient({ plans }: { plans: Plan[] }) {
         <p className="mx-auto mb-6 max-w-[520px] text-[15.5px] text-fg/60">
           Cancel anytime. GST included. Pay via UPI, cards, or net banking.
         </p>
-        <div className="inline-flex gap-1.5 rounded-full border border-white/[.09] bg-white/[.03] p-1.5">
+        <div className="mx-auto inline-flex max-w-full gap-1 overflow-x-auto rounded-full border border-white/[.09] bg-white/[.03] p-1 sm:gap-1.5 sm:p-1.5">
           {BILL_TABS.map((b) => (
             <button
               key={b.value}
               onClick={() => setBillingCycle(b.value)}
-              className="inline-flex items-center gap-2 rounded-full px-[18px] py-2.5 text-sm font-semibold cursor-pointer"
+              className="inline-flex flex-none items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-2 text-[13px] font-semibold cursor-pointer sm:gap-2 sm:px-[18px] sm:py-2.5 sm:text-sm"
               style={{
                 background:
                   billingCycle === b.value ? "linear-gradient(135deg,#8b7cf6,#6366f1)" : "transparent",
@@ -170,7 +170,7 @@ export function PricingClient({ plans }: { plans: Plan[] }) {
             >
               {b.label}
               {b.save && (
-                <span className="rounded-full bg-success/[.16] px-2 py-0.5 text-[11px] font-semibold text-success">
+                <span className="rounded-full bg-success/[.16] px-1.5 py-0.5 text-[10px] font-semibold text-success sm:px-2 sm:text-[11px]">
                   {b.save}
                 </span>
               )}
