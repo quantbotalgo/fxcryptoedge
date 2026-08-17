@@ -1,6 +1,11 @@
+import type { Metadata } from "next";
 import { SectionLabel } from "@/components/ui/Misc";
 
-export const metadata = { title: "Terms of Service — Fx Crypto Edge" };
+export const metadata: Metadata = {
+  title: "Terms of Service",
+  description: "Terms of Service for Fx Crypto Edge — subscription, billing, and usage terms for our trading signals platform.",
+  alternates: { canonical: "/terms" },
+};
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (

@@ -1,7 +1,15 @@
+import type { Metadata } from "next";
 import { API_URL } from "@/lib/api";
 import type { CommissionTier } from "@/lib/types";
 import { ReferClient } from "./ReferClient";
 import { WhyAndCta } from "@/components/WhyAndCta";
+
+export const metadata: Metadata = {
+  title: "Refer & Earn",
+  description:
+    "Share your referral link and earn commission on every paid subscription. Tiered payouts for influencers and affiliates.",
+  alternates: { canonical: "/refer" },
+};
 
 async function getTiers(): Promise<CommissionTier[]> {
   try {

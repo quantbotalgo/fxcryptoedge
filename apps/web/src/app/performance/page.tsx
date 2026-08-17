@@ -1,8 +1,16 @@
+import type { Metadata } from "next";
 import { API_URL } from "@/lib/api";
 import type { PerformanceResponse } from "@/lib/types";
 import { Card } from "@/components/ui/Card";
 import { SectionLabel } from "@/components/ui/Misc";
 import { WhyAndCta } from "@/components/WhyAndCta";
+
+export const metadata: Metadata = {
+  title: "Performance",
+  description:
+    "Transparent, verified track record of every closed forex, crypto, and gold signal — win rate, cumulative return, and full trade history.",
+  alternates: { canonical: "/performance" },
+};
 
 async function getPerformance(): Promise<PerformanceResponse | null> {
   try {

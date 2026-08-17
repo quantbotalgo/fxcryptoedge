@@ -1,6 +1,11 @@
+import type { Metadata } from "next";
 import { SectionLabel } from "@/components/ui/Misc";
 
-export const metadata = { title: "Privacy Policy — Fx Crypto Edge" };
+export const metadata: Metadata = {
+  title: "Privacy Policy",
+  description: "How Fx Crypto Edge collects, uses, and protects your data.",
+  alternates: { canonical: "/privacy" },
+};
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (

@@ -1,5 +1,13 @@
+import type { Metadata } from "next";
 import { SignalsClient } from "./SignalsClient";
 import { WhyAndCta } from "@/components/WhyAndCta";
+
+export const metadata: Metadata = {
+  title: "Live Signals",
+  description:
+    "Live BUY/SELL trading signals for XAU/USD, major forex pairs, and top crypto — with entry, stop loss, and take-profit levels updated in real time.",
+  alternates: { canonical: "/signals" },
+};
 
 // Signals are fetched client-side inside SignalsClient rather than here on
 // the server. Reason: the frontend (Vercel) and API (Render) are on
