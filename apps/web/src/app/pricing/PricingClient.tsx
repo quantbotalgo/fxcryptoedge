@@ -6,9 +6,16 @@ import Link from "next/link";
 import { Card } from "@/components/ui/Card";
 import { priceFor, money } from "@/lib/pricing";
 import { useSubscribeCheckout } from "@/lib/useSubscribeCheckout";
+import { useCashfreeCheckout } from "@/lib/useCashfreeCheckout";
 import { useAuth } from "@/lib/auth-context";
 import { api } from "@/lib/api";
 import type { BillingCycle, MySubscription, Plan } from "@/lib/types";
+
+type PaymentsStatus = {
+  configured: boolean;
+  provider: "RAZORPAY" | "CASHFREE" | null;
+  cashfreeMode: "sandbox" | "production";
+};
 
 const BILL_TABS: { label: string; value: BillingCycle; save: string | null }[] = [
   { label: "Monthly", value: "MONTHLY", save: null },
@@ -46,13 +53,20 @@ function PriceCard({
   plan,
   billingCycle,
   activeSub,
+  paymentsStatus,
 }: {
   plan: Plan;
   billingCycle: BillingCycle;
   activeSub?: MySubscription;
+  paymentsStatus: PaymentsStatus;
 }) {
   const pricing = priceFor(plan.basePriceMonthly, billingCycle);
-  const { subscribe, busy, error } = useSubscribeCheckout(plan, billingCycle);
+  // Both hooks are always initialized (hooks can't be called conditionally) —
+  // only the active provider's subscribe() ever actually runs.
+  const razorpayCheckout = useSubscribeCheckout(plan, billingCycle);
+  const cashfreeCheckout = useCashfreeCheckout(plan, billingCycle, paymentsStatus.cashfreeMode);
+  const { subscribe, busy, error } =
+    paymentsStatus.provider === "CASHFREE" ? cashfreeCheckout : razorpayCheckout;
 
   return (
     <Card className="flex flex-col p-6">
@@ -97,12 +111,17 @@ function ProSubscribeButton({
   plan,
   billingCycle,
   activeSub,
+  paymentsStatus,
 }: {
   plan: Plan;
   billingCycle: BillingCycle;
   activeSub?: MySubscription;
+  paymentsStatus: PaymentsStatus;
 }) {
-  const { subscribe, busy, error } = useSubscribeCheckout(plan, billingCycle);
+  const razorpayCheckout = useSubscribeCheckout(plan, billingCycle);
+  const cashfreeCheckout = useCashfreeCheckout(plan, billingCycle, paymentsStatus.cashfreeMode);
+  const { subscribe, busy, error } =
+    paymentsStatus.provider === "CASHFREE" ? cashfreeCheckout : razorpayCheckout;
   if (activeSub) return <CurrentPlanNote sub={activeSub} />;
   return (
     <>
@@ -122,6 +141,11 @@ export function PricingClient({ plans }: { plans: Plan[] }) {
   const { user } = useAuth();
   const [billingCycle, setBillingCycle] = useState<BillingCycle>("MONTHLY");
   const [mySubs, setMySubs] = useState<MySubscription[]>([]);
+  const [paymentsStatus, setPaymentsStatus] = useState<PaymentsStatus>({
+    configured: false,
+    provider: null,
+    cashfreeMode: "sandbox",
+  });
 
   useEffect(() => {
     if (!user) {
@@ -133,6 +157,13 @@ export function PricingClient({ plans }: { plans: Plan[] }) {
       .then((data) => setMySubs(data.subscriptions))
       .catch(() => setMySubs([]));
   }, [user]);
+
+  useEffect(() => {
+    api
+      .get<PaymentsStatus>("/api/payments/status")
+      .then(setPaymentsStatus)
+      .catch(() => {});
+  }, []);
 
   const subByPlanId = useMemo(() => {
     const map = new Map<string, MySubscription>();
@@ -148,6 +179,7 @@ export function PricingClient({ plans }: { plans: Plan[] }) {
   return (
     <section className="mx-auto max-w-[1180px] px-5 sm:px-8 pb-5 pt-14">
       <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="afterInteractive" />
+      <Script src="https://sdk.cashfree.com/js/v3/cashfree.js" strategy="afterInteractive" />
       <div className="text-center">
         <div className="font-mono text-xs uppercase tracking-[.22em] text-accent">Pricing</div>
         <h1 className="mt-3 mb-2 font-display text-[36px] font-bold tracking-tight sm:text-[46px]">
@@ -185,7 +217,13 @@ export function PricingClient({ plans }: { plans: Plan[] }) {
       </div>
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-3">
         {basic.map((p) => (
-          <PriceCard key={p.id} plan={p} billingCycle={billingCycle} activeSub={subByPlanId.get(p.id)} />
+          <PriceCard
+            key={p.id}
+            plan={p}
+            billingCycle={billingCycle}
+            activeSub={subByPlanId.get(p.id)}
+            paymentsStatus={paymentsStatus}
+          />
         ))}
       </div>
 
@@ -195,7 +233,13 @@ export function PricingClient({ plans }: { plans: Plan[] }) {
       </div>
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
         {lite.map((p) => (
-          <PriceCard key={p.id} plan={p} billingCycle={billingCycle} activeSub={subByPlanId.get(p.id)} />
+          <PriceCard
+            key={p.id}
+            plan={p}
+            billingCycle={billingCycle}
+            activeSub={subByPlanId.get(p.id)}
+            paymentsStatus={paymentsStatus}
+          />
         ))}
       </div>
 
@@ -228,7 +272,12 @@ export function PricingClient({ plans }: { plans: Plan[] }) {
                   </div>
                 )}
                 <div className="mt-1.5 text-[12.5px] text-fg/45">{proPricing.billedLabel}</div>
-                <ProSubscribeButton plan={pro} billingCycle={billingCycle} activeSub={subByPlanId.get(pro.id)} />
+                <ProSubscribeButton
+                  plan={pro}
+                  billingCycle={billingCycle}
+                  activeSub={subByPlanId.get(pro.id)}
+                  paymentsStatus={paymentsStatus}
+                />
               </div>
               <div className="flex flex-col gap-3">
                 {pro.features.map((f) => (
