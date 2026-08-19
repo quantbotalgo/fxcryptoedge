@@ -12,11 +12,13 @@
     "db:seed": "tsx src/db/seed.ts",
     "db:add-reset-columns": "tsx src/db/add-reset-columns.ts",
     "db:add-cancel-column": "tsx src/db/add-cancel-column.ts",
+    "db:add-cashfree-columns": "tsx src/db/add-cashfree-columns.ts",
     "db:set-test-price": "tsx src/db/set-test-price.ts"
   },
   "dependencies": {
     "@paralleldrive/cuid2": "^2.2.2",
     "bcryptjs": "^2.4.3",
+    "cashfree-pg": "^5.0.0",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",

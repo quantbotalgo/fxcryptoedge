@@ -39,6 +39,10 @@ export const referralStatusEnum = pgEnum("referral_status", [
   "SIGNED_UP",
   "CONVERTED",
 ]);
+export const paymentProviderEnum = pgEnum("payment_provider", [
+  "RAZORPAY",
+  "CASHFREE",
+]);
 
 export const users = pgTable(
   "users",
@@ -122,9 +126,17 @@ export const subscriptions = pgTable(
       .references(() => plans.id),
     billingCycle: billingCycleEnum("billing_cycle").notNull().default("MONTHLY"),
     status: subscriptionStatusEnum("status").notNull().default("PENDING"),
+    // Which gateway this order was created against — Razorpay live payments are
+    // blocked pending SEBI registration (see payments.routes.ts), so Cashfree
+    // was added as an alternative. Both sets of id columns stay on one table
+    // rather than splitting into per-provider tables since a subscription only
+    // ever uses one provider's ids at a time.
+    provider: paymentProviderEnum("provider").notNull().default("RAZORPAY"),
     razorpayOrderId: text("razorpay_order_id"),
     razorpayPaymentId: text("razorpay_payment_id"),
     razorpaySubscriptionId: text("razorpay_subscription_id"),
+    cashfreeOrderId: text("cashfree_order_id"),
+    cashfreePaymentId: text("cashfree_payment_id"),
     amount: integer("amount").notNull(),
     startedAt: timestamp("started_at"),
     expiresAt: timestamp("expires_at"),
