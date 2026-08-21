@@ -11,10 +11,11 @@ export function Footer() {
           Fx Crypto Edge<span className="text-accent">.</span>
         </span>
       </div>
-      <div className="flex gap-7 text-sm text-fg/60">
+      <div className="flex flex-wrap gap-x-7 gap-y-2 text-sm text-fg/60">
         <Link href="/privacy">Privacy</Link>
         <Link href="/terms">Terms</Link>
-        <a href="mailto:partners@fxcryptoedge.in">Contact</a>
+        <Link href="/refund-policy">Refunds</Link>
+        <Link href="/contact">Contact</Link>
       </div>
     </footer>
   );
