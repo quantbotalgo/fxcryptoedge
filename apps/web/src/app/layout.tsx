@@ -5,7 +5,11 @@ import { AuthProvider } from "@/lib/auth-context";
 import { Nav } from "@/components/Nav";
 import { Footer } from "@/components/Footer";
 
-const SITE_URL = "https://www.fxcryptoedge.in";
+// Apex domain, not www — Cashfree's live-mode website whitelist only covers
+// fxcryptoedge.in (self-serve wouldn't let us add www as a separate entry,
+// since it treats it as a duplicate of the apex domain), so the apex is now
+// the canonical/primary domain in Vercel and www redirects to it.
+const SITE_URL = "https://fxcryptoedge.in";
 const SITE_NAME = "Fx Crypto Edge";
 const SITE_DESCRIPTION =
   "Get real-time BUY/SELL trading signals with precise entries, stop loss and multiple take-profits — for XAU/USD, major forex pairs, and top crypto. Priced in ₹ for Indian traders.";
