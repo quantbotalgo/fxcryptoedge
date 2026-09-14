@@ -22,8 +22,8 @@ export default function ContactPage() {
       <div className="flex flex-col gap-6 text-[14.5px] leading-relaxed text-fg/70">
         <div>
           <h2 className="mb-1.5 font-display text-lg font-semibold text-fg">Email</h2>
-          <a href="mailto:partners@fxcryptoedge.in" className="font-semibold text-accent-soft">
-            partners@fxcryptoedge.in
+          <a href="mailto:partners@fxquantedge.com" className="font-semibold text-accent-soft">
+            partners@fxquantedge.com
           </a>
           <p className="mt-1 text-fg/55">We typically respond within 1–2 business days.</p>
         </div>
@@ -41,7 +41,7 @@ export default function ContactPage() {
         <div>
           <h2 className="mb-1.5 font-display text-lg font-semibold text-fg">Business</h2>
           <p>
-            Fx Crypto Edge operates fxcryptoedge.in, a subscription platform for forex, crypto, and gold
+            Fx Crypto Edge operates fxquantedge.com, a subscription platform for forex, crypto, and gold
             (XAUUSD) market signals, serving customers across India.
           </p>
         </div>

@@ -219,7 +219,7 @@ export function ReferClient({ tiers }: { tiers: CommissionTier[] }) {
       </div>
       <p className="mt-6 text-center text-sm text-fg/55">
         Have a large audience? Email{" "}
-        <a href="mailto:partners@fxcryptoedge.in">partners@fxcryptoedge.in</a> for custom rates.
+        <a href="mailto:partners@fxquantedge.com">partners@fxquantedge.com</a> for custom rates.
       </p>
     </section>
   );

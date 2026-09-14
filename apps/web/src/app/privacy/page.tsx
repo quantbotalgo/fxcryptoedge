@@ -82,8 +82,8 @@ export default function PrivacyPage() {
         <p>
           You can review or update your account details, and request that we delete your account
           and associated personal data, by emailing us at{" "}
-          <a href="mailto:partners@fxcryptoedge.in" className="font-semibold text-accent-soft">
-            partners@fxcryptoedge.in
+          <a href="mailto:partners@fxquantedge.com" className="font-semibold text-accent-soft">
+            partners@fxquantedge.com
           </a>
           . We may need to retain certain records (such as payment history) where required by law.
         </p>
@@ -108,8 +108,8 @@ export default function PrivacyPage() {
       <Section title="10. Contact">
         <p>
           Questions about this Policy or your data?{" "}
-          <a href="mailto:partners@fxcryptoedge.in" className="font-semibold text-accent-soft">
-            partners@fxcryptoedge.in
+          <a href="mailto:partners@fxquantedge.com" className="font-semibold text-accent-soft">
+            partners@fxquantedge.com
           </a>
         </p>
       </Section>

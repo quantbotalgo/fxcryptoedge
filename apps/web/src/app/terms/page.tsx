@@ -27,7 +27,7 @@ export default function TermsPage() {
 
       <Section title="1. Who we are">
         <p>
-          Fx Crypto Edge (&quot;we&quot;, &quot;us&quot;, &quot;our&quot;) operates fxcryptoedge.in, a
+          Fx Crypto Edge (&quot;we&quot;, &quot;us&quot;, &quot;our&quot;) operates fxquantedge.com, a
           subscription service that publishes forex, cryptocurrency, and gold (XAU/USD) trade
           signals and related performance information. By creating an account or using the site
           you agree to these Terms.
@@ -78,8 +78,8 @@ export default function TermsPage() {
         <p>
           Because access to signals is granted immediately on payment, payments are generally
           non-refundable once processed. If you believe you were charged in error, contact us at{" "}
-          <a href="mailto:partners@fxcryptoedge.in" className="font-semibold text-accent-soft">
-            partners@fxcryptoedge.in
+          <a href="mailto:partners@fxquantedge.com" className="font-semibold text-accent-soft">
+            partners@fxquantedge.com
           </a>{" "}
           and we&apos;ll look into it.
         </p>
@@ -124,8 +124,8 @@ export default function TermsPage() {
       <Section title="11. Contact">
         <p>
           Questions about these Terms?{" "}
-          <a href="mailto:partners@fxcryptoedge.in" className="font-semibold text-accent-soft">
-            partners@fxcryptoedge.in
+          <a href="mailto:partners@fxquantedge.com" className="font-semibold text-accent-soft">
+            partners@fxquantedge.com
           </a>
         </p>
       </Section>

@@ -43,8 +43,8 @@ export default function RefundPolicyPage() {
         <p>
           If you were charged in error — for example, a duplicate charge, an incorrect amount, or a
           payment that didn&apos;t result in account access — contact us at{" "}
-          <a href="mailto:partners@fxcryptoedge.in" className="font-semibold text-accent-soft">
-            partners@fxcryptoedge.in
+          <a href="mailto:partners@fxquantedge.com" className="font-semibold text-accent-soft">
+            partners@fxquantedge.com
           </a>{" "}
           with your order/payment reference and we&apos;ll review it. Approved refunds are processed
           back to the original payment method within 5–7 business days.
@@ -63,8 +63,8 @@ export default function RefundPolicyPage() {
       <Section title="Contact">
         <p>
           Questions about a charge or cancellation?{" "}
-          <a href="mailto:partners@fxcryptoedge.in" className="font-semibold text-accent-soft">
-            partners@fxcryptoedge.in
+          <a href="mailto:partners@fxquantedge.com" className="font-semibold text-accent-soft">
+            partners@fxquantedge.com
           </a>
         </p>
       </Section>
