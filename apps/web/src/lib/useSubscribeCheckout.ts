@@ -63,7 +63,7 @@ export function useSubscribeCheckout(plan: Plan, billingCycle: BillingCycle) {
         amount: order.amount,
         currency: order.currency,
         order_id: order.orderId,
-        name: "Fx Crypto Edge",
+        name: "Fx Quant Edge",
         description: `${plan.name} — ${plan.market}`,
         prefill: { email: user.email, name: user.name },
         theme: { color: "#6366f1" },

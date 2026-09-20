@@ -3,7 +3,7 @@ import { SectionLabel } from "@/components/ui/Misc";
 
 export const metadata: Metadata = {
   title: "Privacy Policy",
-  description: "How Fx Crypto Edge collects, uses, and protects your data.",
+  description: "How Fx Quant Edge collects, uses, and protects your data.",
   alternates: { canonical: "/privacy" },
 };
 
@@ -59,7 +59,7 @@ export default function PrivacyPage() {
         </ul>
         <p>
           We may also disclose information if required by law, or to protect the rights, safety,
-          or property of Fx Crypto Edge, our users, or the public.
+          or property of Fx Quant Edge, our users, or the public.
         </p>
       </Section>
 
@@ -98,7 +98,7 @@ export default function PrivacyPage() {
       </Section>
 
       <Section title="8. Children">
-        <p>Fx Crypto Edge is not directed at, and should not be used by, anyone under the age of 18.</p>
+        <p>Fx Quant Edge is not directed at, and should not be used by, anyone under the age of 18.</p>
       </Section>
 
       <Section title="9. Changes to this policy">

@@ -10,7 +10,7 @@ import { Footer } from "@/components/Footer";
 // since it treats it as a duplicate of the apex domain), so the apex is now
 // the canonical/primary domain in Vercel and www redirects to it.
 const SITE_URL = "https://fxquantedge.com";
-const SITE_NAME = "Fx Crypto Edge";
+const SITE_NAME = "Fx Quant Edge";
 const SITE_DESCRIPTION =
   "Get real-time BUY/SELL trading signals with precise entries, stop loss and multiple take-profits — for XAU/USD, major forex pairs, and top crypto. Priced in ₹ for Indian traders.";
 

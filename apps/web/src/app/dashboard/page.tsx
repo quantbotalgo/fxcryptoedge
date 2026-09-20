@@ -147,7 +147,7 @@ export default function DashboardPage() {
       <p className="mb-8 text-sm text-fg/60">{user.email}</p>
 
       {user.role === "ADMIN" ? (
-        <AdminDashboard name="Fx Crypto Edge" />
+        <AdminDashboard name="Fx Quant Edge" />
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <YourPlanCard />

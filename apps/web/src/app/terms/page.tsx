@@ -3,7 +3,7 @@ import { SectionLabel } from "@/components/ui/Misc";
 
 export const metadata: Metadata = {
   title: "Terms of Service",
-  description: "Terms of Service for Fx Crypto Edge — subscription, billing, and usage terms for our trading signals platform.",
+  description: "Terms of Service for Fx Quant Edge — subscription, billing, and usage terms for our trading signals platform.",
   alternates: { canonical: "/terms" },
 };
 
@@ -27,7 +27,7 @@ export default function TermsPage() {
 
       <Section title="1. Who we are">
         <p>
-          Fx Crypto Edge (&quot;we&quot;, &quot;us&quot;, &quot;our&quot;) operates fxquantedge.com, a
+          Fx Quant Edge (&quot;we&quot;, &quot;us&quot;, &quot;our&quot;) operates fxquantedge.com, a
           subscription service that publishes forex, cryptocurrency, and gold (XAU/USD) trade
           signals and related performance information. By creating an account or using the site
           you agree to these Terms.
@@ -104,7 +104,7 @@ export default function TermsPage() {
 
       <Section title="8. Limitation of liability">
         <p>
-          To the fullest extent permitted by law, Fx Crypto Edge and its team are not liable for
+          To the fullest extent permitted by law, Fx Quant Edge and its team are not liable for
           any trading losses, lost profits, or indirect or consequential damages arising from your
           use of the service or reliance on any signal or content we publish.
         </p>

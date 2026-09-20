@@ -3,7 +3,7 @@ import { SectionLabel } from "@/components/ui/Misc";
 
 export const metadata: Metadata = {
   title: "Contact Us",
-  description: "Get in touch with Fx Crypto Edge for support, billing questions, or general inquiries.",
+  description: "Get in touch with Fx Quant Edge for support, billing questions, or general inquiries.",
   alternates: { canonical: "/contact" },
 };
 
@@ -41,7 +41,7 @@ export default function ContactPage() {
         <div>
           <h2 className="mb-1.5 font-display text-lg font-semibold text-fg">Business</h2>
           <p>
-            Fx Crypto Edge operates fxquantedge.com, a subscription platform for forex, crypto, and gold
+            Fx Quant Edge operates fxquantedge.com, a subscription platform for forex, crypto, and gold
             (XAUUSD) market signals, serving customers across India.
           </p>
         </div>

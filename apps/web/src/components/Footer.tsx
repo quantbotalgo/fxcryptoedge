@@ -8,7 +8,7 @@ export function Footer() {
           ⚡
         </div>
         <span className="font-display text-base font-bold">
-          Fx Crypto Edge<span className="text-accent">.</span>
+          Fx Quant Edge
         </span>
       </div>
       <div className="flex flex-wrap gap-x-7 gap-y-2 text-sm text-fg/60">

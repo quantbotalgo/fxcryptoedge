@@ -3,7 +3,7 @@ import { SectionLabel } from "@/components/ui/Misc";
 
 export const metadata: Metadata = {
   title: "Refund & Cancellation Policy",
-  description: "Fx Crypto Edge's refund and cancellation policy for subscription plans.",
+  description: "Fx Quant Edge's refund and cancellation policy for subscription plans.",
   alternates: { canonical: "/refund-policy" },
 };
 

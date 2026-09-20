@@ -62,7 +62,7 @@ export function Nav() {
           <span className="font-display text-lg font-bold text-white">⚡</span>
         </div>
         <span className="font-display text-[19px] font-bold tracking-tight">
-          Fx Crypto Edge<span className="text-accent">.</span>
+          Fx Quant Edge
         </span>
       </Link>
 

@@ -1,7 +1,7 @@
 import { ImageResponse } from "next/og";
 
 export const runtime = "edge";
-export const alt = "Fx Crypto Edge — Trading signals for Forex, Crypto & Gold";
+export const alt = "Fx Quant Edge — Trading signals for Forex, Crypto & Gold";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -40,7 +40,7 @@ export default function OgImage() {
             ⚡
           </div>
           <div style={{ display: "flex", fontSize: 68, fontWeight: 700, color: "#ffffff" }}>
-            Fx Crypto Edge
+            Fx Quant Edge
           </div>
         </div>
         <div

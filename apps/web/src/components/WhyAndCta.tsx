@@ -19,7 +19,7 @@ export function WhyAndCta() {
     <>
       <section className="mx-auto max-w-[1180px] px-5 sm:px-8 py-16 text-center">
         <h2 className="font-display text-3xl font-bold tracking-tight sm:text-[36px]">
-          Why traders love Fx Crypto Edge
+          Why traders love Fx Quant Edge
         </h2>
         <div className="mt-8 grid grid-cols-1 gap-5 text-left sm:grid-cols-2">
           {WHYS.map((w) => (

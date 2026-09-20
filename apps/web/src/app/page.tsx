@@ -42,7 +42,7 @@ export default function HomePage() {
           <span className="text-gradient">Forex, Crypto &amp; Gold.</span>
         </h1>
         <div className="mt-3.5 font-display text-xl font-semibold tracking-tight text-accent">
-          Built for India.
+          Quantitative trading signals
         </div>
         <p className="mx-auto mt-5 max-w-[640px] text-[17.5px] leading-relaxed text-fg/62">
           Get real-time BUY/SELL alerts with precise entries, stop loss and multiple take-profits —
@@ -66,7 +66,7 @@ export default function HomePage() {
           </span>
         </div>
         <Pill className="mt-6 mx-auto border-accent/30 bg-accent/[.08]">
-          <span className="text-accent">★</span>Powered by Claude AI
+          <span className="text-accent">★</span>Powered by Quant Intelligence
         </Pill>
       </section>
 
